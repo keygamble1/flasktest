@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    {% for message in get_flashed_messages()  %}
+    <div class="alert alert-danger" role="alert">
+        <strong>{{message}} </strong>
+    </div>
+    {% endfor %}
+    <h5 class="my-3 border-bottom py-2">
+        <!--my-3는 전 py 는 그 후라고 생각하자 그사이는 객체이고-->
+        질문등록
+        <form class="post-form my-3" method="post">
+            {{form.csrf_token}}
+            {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for field,errors in form.errors.items() %}
+                    
+                    <strong>{{form[field].label}} </strong>
+                    {% for error in errors %}
+                    <li>{{error}}</li>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+
+            {% endif %}
+            <!--나중을위해 action url안씀-->
+            <!--action지정안할시 자기를 호출한 views로 자동호출-->
+            <!--즉 question.create가 자동됨-->
+            <div class="mb-3">
+                <label for="subject">제목</label>
+                <input class="form-control" type="text" name="subject" id="subject"
+                value="{{form.subject.data or ''}}">
+            </div>
+            <div class="mb-3">
+                <label for="content">내용</label>
+                <textarea class="form-control" name="content" id="content" rows="10">{{form.content.data or ''}}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">저장하기</button>
+
+        </form>
+    </h5>
+
+</div>
+
+{% endblock  %}

@@ -1,0 +1,134 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-3">
+  <!-- c 자동완성이 주석 -->
+   <div class="row my-3">
+      <div class="col-6">
+        <a href="{{url_for("question.create")}}" class="btn btn-primary" >질문등록하기</a>
+      </div>
+      <div class="col-6">
+          <div class="input-group">
+            <input type="text"  id="search_kw" class="form-control" value="{{kw or ''}}">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary" id="btn_search">찾기</button>
+            </div>
+          </div>
+      </div>
+   </div>
+    <table class="table">
+        <thead class="text-center table-dark ">
+            <tr>
+                <th >번호</th>
+                <th style="width:50%">제목</th>
+                <th>글쓴이</th>
+                <th>작성일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if question_list %}
+            <!--목록가져오려면 .items해줘야함-->
+            {% for question in question_list.items %}
+            <tr class="text-center">
+                <td>{{question_list.total -((question_list.page-1)*question_list.per_page)-loop.index0 }} </td>
+                <td class="text-start">
+                    <a href="{{url_for("question.detail",question_id=question.id)}}">{{question.subject}} </a>
+                    {% if question.answer_set|length > 0 %}
+                    <span class="text-danger small mx-2">{{question.answer_set|length}} </span>
+                    {% endif %}
+                </td>
+                <td>
+                  {{question.user.username}}
+                </td>
+                <td>
+                    {{question.create_date|datetime}}
+                </td>
+            </tr>
+            
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="3">질문x</td>
+            </tr>
+            {% endif %}
+
+        </tbody>
+    </table>
+
+      <ul class="pagination justify-content-center">
+        <!--이전-->
+        {% if question_list.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="javascript:void(0)" data-page="{{question_list.prev_num}}">이전
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" tabindex="-1"  href="javascript:void(0)">이전
+          </a>
+        </li>
+        {% endif %}
+                <!--이전-->
+                <!--페이지번호-->
+                <!--?page=1로 href로 가능하지만
+                javascript로 막아버릴경우 javascript에서 hidden으로 id 'page' input hidden필드에 클릭된 페이지번호를 설정후
+                form을 submit함 이게규칙 쿼리스트링이아닌 폼데이터로 전송 href url에 속성넣어 보내는게 쿼리스트링이라고함-->
+        <!--주소 /옆에 ?는 원래 나오는거임 view로 따로정의안하고 속성값이들어갈때-->
+        {% for page_num in question_list.iter_pages() %}
+        {% if page_num %}
+        {% if page_num !=question_list.page %}
+        <li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="{{page_num}}" >{{page_num}} </a></li>
+        {% else %}
+        <li class="page-item active"><a class="page-link" href="#">{{page_num}} </a></li>
+        {% endif %}
+        {% else %}
+        <li class="disabled">
+          <a class="page-link" href="javascript:void(0)" >...</a>
+        </li>
+        {% endif %}
+        {% else %}
+ 
+        {% endfor %}
+        <!--페이지번호-->
+
+          <!--다음-->
+                {% if question_list.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="javascript:void(0)" data-page="{{question_list.next_num}}" >다음
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="javascript:void(0)" >다음
+        </li>
+        {% endif %}
+               <!--다음-->
+      </ul>
+    
+</div>
+<form action="" id="searchForm" method="get">
+  <!-- kw와 page가 url에 나옴 get이라서 hidden 취급 form get한순간부터 url에 나타남 -->
+  <input type="text" name="kw" id="kw" value="{{kw or ''}}">
+  <input type="text" name="page" id="page" value="{{page}}">
+</form>
+<!-- page-link안에서 'page'를 찾는게아닌 독립적으로 'page'를 찾음 for쓴게아니기때문 -->
+{% endblock  %}
+{% block script %}
+<script type="text/javascript">
+  const page_elements=document.getElementsByClassName("page-link");
+  Array.from(page_elements).forEach(function(element){
+      element.addEventListener('click',function(){
+          document.getElementById('page').value=this.dataset.page;
+          document.getElementById('searchForm').submit()
+      });
+  });
+  const btn_search=document.getElementById("btn_search");
+  btn_search.addEventListener('click',function(){
+        document.getElementById('kw').value=document.getElementById('search_kw').value;
+        document.getElementById('page').value=1;
+        document.getElementById('searchForm').submit();
+
+    });
+
+</script>
+{% endblock  %}
